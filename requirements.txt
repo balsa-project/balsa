@@ -1,0 +1,15 @@
+ray==1.9.2
+pandas
+pytorch_lightning==0.9.0
+torch==1.4.0
+wandb
+psycopg2-binary==2.8.5
+absl-py==0.9.0
+numpy==1.18.1
+networkx
+ipdb
+# Required by Ray
+aiohttp==3.7.4
+aioredis==1.3.1
+aiopg
+grpcio==1.43.0

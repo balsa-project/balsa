@@ -1,0 +1,79 @@
+cluster_name: balsa
+
+provider:
+    type: aws
+    region: us-east-1
+    cache_stopped_nodes: True
+
+# NOTE: Modify this number to be the desired # of Postgres execution nodes.
+#   Head = GPU machine running training
+#   Workers = Postgres execution nodes
+min_workers: 20
+max_workers: 20
+initial_workers: 20
+upscaling_speed: 20
+
+# NOTE: Modify InstanceType for head/workers to appropriate VM types.
+head_node:
+    InstanceType: "g4dn.12xlarge"
+    BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+              VolumeSize: 256
+worker_nodes:
+    InstanceType: "r5a.2xlarge"
+    BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+              VolumeSize: 256
+
+file_mounts: {
+    # NOTE: Modify the RHS to the local path of balsa on your local machine.
+    "~/balsa": "~/local/path/to/balsa",
+}
+
+# No need to modify anything below.
+auth:
+    ssh_user: ubuntu
+cluster_synced_files: []
+file_mounts_sync_continuously: False
+rsync_exclude:
+    - "**/.git"
+    - "**/.git/**"
+    # Exclude rsyncing these files from head to the workers:
+    - 'tensorboard_logs'
+    - 'tensorboard_logs_balsa'
+    - 'runs'
+    - '*.log'
+    - 'data'
+    - 'wandb'
+
+rsync_filter:
+    - ".gitignore"
+
+initialization_commands: []
+setup_commands:
+    - cd balsa && ./setup.sh
+    - . $(conda info --base)/etc/profile.d/conda.sh 2> /dev/null || true
+    - conda init bash
+    - conda activate balsa || (conda create -n balsa python=3.7 -y && conda activate balsa)
+    - conda activate balsa && cd ~/balsa/pg_executor && pip install -r requirements.txt && pip install -e . && pip install boto3
+    - pip install boto3
+head_setup_commands:
+    - pg_ctl -D ~/imdb restart -l logfile
+    - psql imdbload -c "CREATE USER psycopg; ALTER USER psycopg WITH SUPERUSER;" || true
+worker_setup_commands:
+    - pg_ctl -D ~/imdb restart -l logfile
+    - psql imdbload -c "CREATE USER psycopg; ALTER USER psycopg WITH SUPERUSER;" || true
+
+head_start_ray_commands:
+    - conda activate balsa && ray stop
+    - conda activate balsa && ray start --head --port=6379 --autoscaling-config=~/ray_bootstrap_config.yaml --resources='{"pg":0}'
+    - sudo bash ~/balsa/scripts/start-mps.sh || true  # Optional: imporve perf for multiple runs sharing a GPU
+
+# We give a custom resource {'pg':1} to each node, so that each node can execute
+# at most 1 query at a time.
+worker_start_ray_commands:
+    - echo $RAY_HEAD_IP > /tmp/pg_head_ip.txt
+    - conda activate balsa && ray stop
+    - conda activate balsa && export RAY_HEAD_IP=$(cat /tmp/pg_head_ip.txt) && ray start --address=$RAY_HEAD_IP:6379 --resources='{"pg":1}'
