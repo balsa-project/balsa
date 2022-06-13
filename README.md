@@ -424,11 +424,23 @@ This occasionally happens when Postgres fails to respect the query plan hint gen
 ## Citation
 ```bibtex
 @inproceedings{balsa,
-  author = {Yang, Zongheng and Chiang, Wei-Lin and Luan, Sifei and Mittal, Gautam and Luo, Michael and Stoica, Ion},
-  title = {Balsa: Learning a Query Optimizer Without Expert Demonstrations},
-  year = {2022},
-  booktitle = {Proceedings of the 2022 ACM SIGMOD International Conference on Management of Data},
-  series = {SIGMOD '22}
+  author =       {Yang, Zongheng and Chiang, Wei-Lin and Luan, Sifei and Mittal,
+                  Gautam and Luo, Michael and Stoica, Ion},
+  title =        {Balsa: Learning a Query Optimizer Without Expert
+                  Demonstrations},
+  booktitle =    {Proceedings of the 2022 International Conference on Management
+                  of Data},
+  year =         2022,
+  pages =        {931--944},
+  doi =          {10.1145/3514221.3517885},
+  url =          {https://doi.org/10.1145/3514221.3517885},
+  address =      {New York, NY, USA},
+  isbn =         9781450392495,
+  keywords =     {machine learning for systems, learned query optimization},
+  location =     {Philadelphia, PA, USA},
+  numpages =     14,
+  publisher =    {Association for Computing Machinery},
+  series =       {SIGMOD/PODS '22},
 }
 
 @misc{balsa_github,
