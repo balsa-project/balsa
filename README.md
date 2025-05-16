@@ -106,7 +106,7 @@ the agent neural network and query execution.
     ```bash
     cd ~/
     mkdir -p datasets/job && pushd datasets/job
-    wget -c http://homepages.cwi.nl/~boncz/job/imdb.tgz && tar -xvzf imdb.tgz && popd
+    wget -c https://event.cwi.nl/da/job/imdb.tgz && tar -xvzf imdb.tgz && popd
     # Prepend headers to CSV files
     python3 ~/balsa/scripts/prepend_imdb_headers.py
 
